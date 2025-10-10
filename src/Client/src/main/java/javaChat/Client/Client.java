@@ -94,6 +94,7 @@ public class Client {
 					this.console.print("-> ");
 					String tmp = this.console.read();
 					out.write(tmp);
+					out.flush();
 				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block

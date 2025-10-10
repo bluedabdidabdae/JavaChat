@@ -37,6 +37,7 @@ public class ChatUser implements Runnable {
 
 		try {
 			while (true) {
+
 				String inputData = this.in.readLine();
 
 				// telling all other user threads to send received data
@@ -47,6 +48,7 @@ public class ChatUser implements Runnable {
 
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			this.console.log("Connection with "+this.socket.getRemoteSocketAddress()+" dropped");
 			this.console.log("Happened because of: "+e.getMessage());
 		}
