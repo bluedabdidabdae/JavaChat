@@ -7,83 +7,109 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.atomic.AtomicReferenceArray;
 
 public class Server {
-	
-	private ServerSocket socket;
+
+	private ServerSocket serverSocket;
+	private Console console;
+	private int maxHosts;
+	private AtomicReferenceArray<ChatUser> userList;
+	private int userCount = 0;
 	
 	// TODO: Save password through hash
 	private String password = null;
-	private Console console;
-	
+
 	public Server(int port) throws IOException {
-		this.socket = new ServerSocket(port);
+		this.serverSocket = new ServerSocket(port);
 	}
-	
+
 	public boolean validateServerPassword(String toCheck) {
 		return this.password.equals(toCheck);
 	}
-	
+
 	public void close() {
 		this.console.log("Closing server");
+		for (int i = 0; i < this.userList.length(); i++) {
+			if(null != this.userList.get(i))
+				this.userList.get(i).close();
+		}
 		System.exit(0);
 	}
-	
+
 	public void start() {
-		
+
 		// creating console
 		this.console = new Console(System.out, System.in, this);
 		this.console.info("Server started");
-		
+
 		// setupping password
 		do {
 			this.console.print("Create server password: ");
 			this.setPassword(this.console.read());
-			
+
 			this.console.print("Confirm server password: ");
-			
-		} while(!this.password.equals(this.console.read()));
-		
+
+		} while (!this.password.equals(this.console.read()));
+
 		this.console.info("Password created");
+
+		do {
+			this.console.print("Insert max hosts number: ");
+
+			try {
+				this.maxHosts = Integer.parseInt(this.console.read());
+			} catch (NumberFormatException e) {
+				this.console.println("Invalid number");
+			}
+
+		} while (0 >= this.maxHosts);
+
+		this.userList = new AtomicReferenceArray<ChatUser>(this.maxHosts);
 		
-		this.console.info("Server address: " + this.socket.getLocalSocketAddress());
-		this.console.info("Server port: " + this.socket.getLocalPort());
-		
+		this.console.info("Server address: " + this.serverSocket.getLocalSocketAddress());
+		this.console.info("Server port: " + this.serverSocket.getLocalPort());
+
 		// starting interactive console
 		// by separating it from main thread
-		Thread t = new Thread(this.console);
-		t.start();
-		
-		while(true) {
+		Thread consoleThread = new Thread(this.console);
+		consoleThread.start();
+
+		while (true) {
 			try {
 				this.console.log("Waiting for incoming connection...");
-				Socket tmp = this.socket.accept();
-			
+				Socket tmpSocket = this.serverSocket.accept();
+
 				this.console.println("");
-				this.console.log("Incoming connection from " + tmp.getRemoteSocketAddress());
-				
-				BufferedReader in = new BufferedReader(new InputStreamReader(tmp.getInputStream()));
-				BufferedWriter out = new BufferedWriter(new OutputStreamWriter(tmp.getOutputStream()));
-				
-				if(!this.validateServerPassword(in.readLine())) {
+				this.console.log("Incoming connection");
+				this.console.log("Address: " + tmpSocket.getRemoteSocketAddress());
+
+				BufferedReader in = new BufferedReader(new InputStreamReader(tmpSocket.getInputStream()));
+				BufferedWriter out = new BufferedWriter(new OutputStreamWriter(tmpSocket.getOutputStream()));
+
+				if (this.validateServerPassword(in.readLine())) {
+					this.console.log("Correct password from client");
+					this.console.log("Notifiying");
+
+					out.write("Authorized");
+					out.newLine();
+					out.flush();
+
+					ChatUser tmpUser = new ChatUser(in, out, tmpSocket, this.console, this.userList);
+					this.userList.set(this.userCount++, tmpUser);
+					Thread t = new Thread(tmpUser);
+					t.start();
+					
+				} else {
 					this.console.log("Wrong password from client");
 					this.console.log("Notifiying and closing connection...");
 					out.write("Wrong password");
 					out.newLine();
 					out.flush();
-					
-					tmp.close();
-				} else {
-					this.console.log("Correct password from client");
-					this.console.log("Notifiying");
-					
-					out.write("Authorized");
-					out.newLine();
-					out.flush();
-					
-					tmp.close();
+
+					tmpSocket.close();
 				}
-				
+
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
