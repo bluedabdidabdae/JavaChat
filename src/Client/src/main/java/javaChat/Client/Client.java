@@ -15,6 +15,10 @@ public class Client {
 	private String password;
 	private Console console;
 
+	public void close() {
+		
+	}
+	
 	public void start() {
 		System.out.println("Client started");
 		Socket sock;
@@ -62,13 +66,17 @@ public class Client {
 				out.newLine();
 				out.flush();
 
-				System.out.println(in.readLine());
-
-				new Thread(new ClientServer(this.console, out)).start();
-				new Thread(new ServerClient(this.console, in)).start();
-
-				return;
-
+				String response = in.readLine();
+				this.console.println(response);
+				
+				if(response.equals("Authorized")) {
+					new Thread(new ClientServer(this.console, out)).start();
+					new Thread(new ServerClient(this.console, in)).start();
+					return;
+				
+				} else {
+					sock.close();
+				}
 			} catch (UnknownHostException e) {
 				System.out.println("Invalid address/port combination");
 			} catch (IOException e) {
@@ -91,10 +99,12 @@ public class Client {
 		public void run() {
 			try {
 				while (true) {
-					this.console.print("-> ");
+					
+					this.console.printStart();
 					String tmp = this.console.read();
-					out.write(tmp);
-					out.flush();
+					this.out.write(tmp);
+					this.out.newLine();
+					this.out.flush();
 				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -117,7 +127,10 @@ public class Client {
 		public void run() {
 			try {
 				while (true) {
-					this.console.println(in.readLine());
+					String tmp = in.readLine();
+					this.console.eraseStart();
+					this.console.println(tmp);
+					this.console.printStart();
 				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block

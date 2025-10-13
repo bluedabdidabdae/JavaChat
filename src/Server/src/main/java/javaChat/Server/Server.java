@@ -24,6 +24,22 @@ public class Server {
 		this.serverSocket = new ServerSocket(port);
 	}
 
+	public void popUser(ChatUser toPop) {
+		boolean sanityCheck = false;
+		for (int i = 0; i < this.userList.length(); i++) {
+			if(this.userList.get(i).equals(toPop)) {
+				this.userList.set(i, null);
+				this.userCount--;
+				sanityCheck = true;
+			}
+		}
+		
+		if(!sanityCheck) {
+			this.console.log("Chat user not found in users list, stopping server since in unsafe state");
+			this.close();
+		}
+	}
+	
 	public boolean validateServerPassword(String toCheck) {
 		return this.password.equals(toCheck);
 	}
@@ -47,7 +63,7 @@ public class Server {
 		do {
 			this.console.print("Create server password: ");
 			this.setPassword(this.console.read());
-
+			
 			this.console.print("Confirm server password: ");
 
 		} while (!this.password.equals(this.console.read()));
@@ -60,6 +76,7 @@ public class Server {
 			try {
 				this.maxHosts = Integer.parseInt(this.console.read());
 			} catch (NumberFormatException e) {
+				this.console.eraseStart();
 				this.console.println("Invalid number");
 			}
 
@@ -80,14 +97,24 @@ public class Server {
 				this.console.log("Waiting for incoming connection...");
 				Socket tmpSocket = this.serverSocket.accept();
 
-				this.console.println("");
 				this.console.log("Incoming connection");
 				this.console.log("Address: " + tmpSocket.getRemoteSocketAddress());
 
 				BufferedReader in = new BufferedReader(new InputStreamReader(tmpSocket.getInputStream()));
 				BufferedWriter out = new BufferedWriter(new OutputStreamWriter(tmpSocket.getOutputStream()));
 
-				if (this.validateServerPassword(in.readLine())) {
+				if(this.userCount >= this.maxHosts) {
+					in.readLine();
+					this.console.log("Max host number reached");
+					this.console.log("Notifiying");
+					
+					out.write("Server is full");
+					out.newLine();
+					out.flush();
+					
+					tmpSocket.close();
+				}
+				else if (this.validateServerPassword(in.readLine())) {
 					this.console.log("Correct password from client");
 					this.console.log("Notifiying");
 
@@ -95,7 +122,7 @@ public class Server {
 					out.newLine();
 					out.flush();
 
-					ChatUser tmpUser = new ChatUser(in, out, tmpSocket, this.console, this.userList);
+					ChatUser tmpUser = new ChatUser(in, out, tmpSocket, this.console, this.userList, this);
 					this.userList.set(this.userCount++, tmpUser);
 					Thread t = new Thread(tmpUser);
 					t.start();
@@ -111,7 +138,8 @@ public class Server {
 				}
 
 			} catch (IOException e) {
-				e.printStackTrace();
+				this.console.log("Server crashed ):");
+				this.close();
 			}
 		}
 	}

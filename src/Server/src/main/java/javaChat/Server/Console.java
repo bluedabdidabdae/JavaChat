@@ -21,7 +21,7 @@ public class Console implements Runnable {
 		String command;
 		this.println("Welcome to server console!");
 		do {
-			this.print(" # ");
+			this.printStart();
 			command = this.read();
 			this.parseCommand(command);
 		} while (true);
@@ -114,5 +114,13 @@ public class Console implements Runnable {
 
 	public void info(String toPrint) {
 		this.out.println("[INFO] " + toPrint);
+	}
+	
+	public void printStart() {
+		this.out.print(" # ");
+	}
+	
+	public void eraseStart() {
+		this.out.print("\r");
 	}
 }

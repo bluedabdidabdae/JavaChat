@@ -36,4 +36,12 @@ public class Console {
 	public void info(String toPrint) {
 		this.out.println("[INFO] " + toPrint);
 	}
+	
+	public void printStart() {
+		this.out.print("-> ");
+	}
+	
+	public void eraseStart() {
+		this.out.print("\b\b\b");
+	}
 }
