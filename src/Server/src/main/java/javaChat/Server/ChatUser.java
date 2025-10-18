@@ -51,7 +51,6 @@ public class ChatUser implements Runnable {
 			}
 		} catch (Exception e) {
 			this.console.log("Connection with "+this.socket.getRemoteSocketAddress()+" dropped");
-			this.console.log("Happened because of: "+e.getMessage());
 			
 			this.server.popUser(this);
 		}

@@ -40,8 +40,4 @@ public class Console {
 	public void printStart() {
 		this.out.print("-> ");
 	}
-	
-	public void eraseStart() {
-		this.out.print("\b\b\b");
-	}
 }

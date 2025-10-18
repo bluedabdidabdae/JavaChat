@@ -26,17 +26,22 @@ public class Server {
 
 	public void popUser(ChatUser toPop) {
 		boolean sanityCheck = false;
-		for (int i = 0; i < this.userList.length(); i++) {
-			if(this.userList.get(i).equals(toPop)) {
-				this.userList.set(i, null);
-				this.userCount--;
-				sanityCheck = true;
+		try {
+			for (int i = 0; i < this.userList.length(); i++) {
+				if(this.userList.get(i).equals(toPop)) {
+					this.userList.set(i, null);
+					this.userCount--;
+					sanityCheck = true;
+				}
 			}
-		}
-		
-		if(!sanityCheck) {
-			this.console.log("Chat user not found in users list, stopping server since in unsafe state");
-			this.close();
+			
+			if(!sanityCheck) {
+				this.console.log("Chat user not found in users list, stopping server since in unsafe state");
+				this.close();
+			}
+		} catch(NullPointerException e) {
+			this.console.log("Forcefully removed user from users list");
+			this.userCount--;
 		}
 	}
 	

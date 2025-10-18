@@ -14,6 +14,7 @@ public class Client {
 	private int port;
 	private String password;
 	private Console console;
+	private String username;
 
 	public void close() {
 		
@@ -53,8 +54,11 @@ public class Client {
 
 			this.port = Integer.parseInt(port);
 
-			System.out.print("Insert password: ");
+			this.console.print("Insert password: ");
 			this.password = this.console.read();
+			
+			this.console.print("Insert username: ");
+			this.username = this.console.read();
 
 			try {
 				sock = new Socket(this.address, this.port);
@@ -70,7 +74,7 @@ public class Client {
 				this.console.println(response);
 				
 				if(response.equals("Authorized")) {
-					new Thread(new ClientServer(this.console, out)).start();
+					new Thread(new ClientServer(this.console, out, this.username)).start();
 					new Thread(new ServerClient(this.console, in)).start();
 					return;
 				
@@ -89,10 +93,12 @@ public class Client {
 
 		private Console console;
 		private BufferedWriter out;
-
-		private ClientServer(Console console, BufferedWriter out) {
+		private String username;
+		
+		private ClientServer(Console console, BufferedWriter out, String username) {
 			this.console = console;
 			this.out = out;
+			this.username = username;
 		}
 
 		@Override
@@ -101,8 +107,8 @@ public class Client {
 				while (true) {
 					
 					this.console.printStart();
-					String tmp = this.console.read();
-					this.out.write(tmp);
+					this.out.write("[" + this.username + "] ");
+					this.out.write(this.console.read());
 					this.out.newLine();
 					this.out.flush();
 				}
@@ -128,7 +134,6 @@ public class Client {
 			try {
 				while (true) {
 					String tmp = in.readLine();
-					this.console.eraseStart();
 					this.console.println(tmp);
 					this.console.printStart();
 				}
