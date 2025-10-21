@@ -68,6 +68,8 @@ public class Client {
 
 				out.write(this.password);
 				out.newLine();
+				out.write(this.username);
+				out.newLine();
 				out.flush();
 
 				String response = in.readLine();

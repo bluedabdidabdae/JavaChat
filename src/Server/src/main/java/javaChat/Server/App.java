@@ -16,9 +16,10 @@ public class App {
 		} catch (IOException e) {
 			System.out.println("Server just detonated :(");
 			System.out.println("I detonated because: " + e.getMessage());
-			return;
+			System.exit(1);
 		}
 
-		System.out.println("Server closing");
+		System.out.println("Server closed");
+		System.exit(0);
 	}
 }

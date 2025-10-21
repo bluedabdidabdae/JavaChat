@@ -14,14 +14,16 @@ public class ChatUser implements Runnable {
 	private Console console;
 	private AtomicReferenceArray<ChatUser> userList;
 	private Server server;
+	private String username;
 	
-	public ChatUser(BufferedReader in, BufferedWriter out, Socket socket, Console console, AtomicReferenceArray<ChatUser> userList, Server server) {
+	public ChatUser(BufferedReader in, BufferedWriter out, Socket socket, Console console, AtomicReferenceArray<ChatUser> userList, Server server, String username) {
 		this.in = in;
 		this.out = out;
 		this.socket = socket;
 		this.console = console;
 		this.userList = userList;
 		this.server = server;
+		this.username = username;
 	}
 
 	public void sendData(String data) throws IOException {
@@ -50,7 +52,7 @@ public class ChatUser implements Runnable {
 
 			}
 		} catch (Exception e) {
-			this.console.log("Connection with "+this.socket.getRemoteSocketAddress()+" dropped");
+			this.console.log("Connection with "+this.socket.getRemoteSocketAddress()+" ("+this.username+") dropped");
 			
 			this.server.popUser(this);
 		}

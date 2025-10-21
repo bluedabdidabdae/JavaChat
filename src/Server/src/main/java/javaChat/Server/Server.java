@@ -126,8 +126,8 @@ public class Server {
 					out.write("Authorized");
 					out.newLine();
 					out.flush();
-
-					ChatUser tmpUser = new ChatUser(in, out, tmpSocket, this.console, this.userList, this);
+					
+					ChatUser tmpUser = new ChatUser(in, out, tmpSocket, this.console, this.userList, this, in.readLine());
 					this.userList.set(this.userCount++, tmpUser);
 					Thread t = new Thread(tmpUser);
 					t.start();
