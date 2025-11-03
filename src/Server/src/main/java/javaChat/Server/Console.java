@@ -38,7 +38,7 @@ public class Console implements Runnable {
 			this.changeServerPassword();
 			break;
 
-		case "close server":
+		case "stop server":
 			this.closeServer();
 			break;
 
